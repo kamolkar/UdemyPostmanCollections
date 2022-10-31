@@ -1,0 +1,319 @@
+{
+	"info": {
+		"_postman_id": "7ab4d0e2-1e4d-4e66-9beb-ae6622d019e1",
+		"name": "Library_10302022",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11911814"
+	},
+	"item": [
+		{
+			"name": "Add Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Assertions, validations for test cases",
+							"/**",
+							" * Const is a datatype to declare a variable and JsonData stores the complete Json() response.",
+							" * pm.expect - This is an assertion asking to expect JsonData to have a property value as \"Msg\"",
+							" */",
+							"",
+							"const JsonData = pm.response.json(); // JsonData holds the complete Json Object response",
+							"/**",
+							" * Extracting the response Value and inserting in Get and Delete requests.  Then replace the Environment Variable {{Id}} value in Get and Delete Request",
+							" */",
+							"console.log(JsonData);",
+							"console.log(JsonData.ID);",
+							"const Id = JsonData.ID;",
+							"console.log(Id);",
+							"pm.environment.set(\"Book_Id\", Id);",
+							"",
+							"// Verify the Status code",
+							"pm.test(\"TC001: Validate Status code is 200 OK \", ()=>{",
+							"    pm.response.to.have.status(200);",
+							"    pm.expect(JsonData).have.property(\"Msg\");",
+							"})",
+							"",
+							"//Verify the property in response Body",
+							"pm.test(\"TC002: Verify the Property 'Msg' in response Body \", ()=>{",
+							"    pm.expect(JsonData).have.property(\"Msg\");",
+							"})",
+							"",
+							"// Validate the property value",
+							"pm.test(\"TC003: Validate Msg text value: \",()=>{",
+							"    pm.expect(JsonData.Msg).to.eql(\"successfully added\")",
+							"})",
+							"",
+							"//TC004: Verify the Header in the response",
+							"pm.test(\"TC004: Verify the Header in the response\", () =>{",
+							"    // Verify the header exists",
+							"    pm.response.to.have.header(\"Content-Type\");",
+							"    //Verify the header value",
+							"    pm.expect(pm.response.headers.get(\"Content-Type\")).to.eql(\"application/json;charset=UTF-8\");",
+							"",
+							"});",
+							"",
+							"//TC005: Verify the response time: Ref: https://learning.postman.com/docs/writing-scripts/script-references/test-examples/",
+							"pm.test(\"TC005: Verify the response time \",()=>{",
+							"    pm.expect(pm.response.responseTime).to.be.below(1200);",
+							"});",
+							"",
+							"//TC006: Verify a particular text in Json response",
+							"pm.test(\"TC006: Verify a particular text in the Json response\",()=>{",
+							"    pm.expect(pm.response.text()).to.include(\"successfully added\");",
+							"});",
+							"",
+							"/**",
+							" * Extracting the response Value and inserting in Get and Delete requests",
+							" */",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Create a Dynamic Random number so that it runs before the request body sent to the server.",
+							"// Example: PwC4232 (PwC is a company code and define this variable in Global variables)",
+							"",
+							"//print the global variable in console",
+							"console.log(pm.globals.get(\"CompanyCode\"));",
+							"",
+							"// will get this global variable value into a variable",
+							"const Code = pm.globals.get(\"CompanyCode\");",
+							"console.log(Code);",
+							"",
+							"// logic to retrieve a random number btw 1 to 1000 Ref: https://learning.postman.com/docs/writing-scripts/script-references/variables-list/",
+							"const val = pm.variables.replaceIn('{{$randomInt}}');",
+							"",
+							"// Add a variable in Collections as isbn and set the value in Collections.  Then replace the {{isbn}} in the request body.",
+							"pm.collectionVariables.set(\"isbn\", Code+val);",
+							"",
+							"//Add a Collection variable for Add Book (Author Name to compare in Get Request)",
+							"pm.collectionVariables.set(\"Author_Name\", \"John Doe\")"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\":\"Learn Appium Automation with Java\",\n    \"isbn\":\"{{isbn}}\",\n    \"aisle\":\"9220\",\n    \"author\":\"{{Author_Name}}\"\n\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/Library/Addbook.php",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"Library",
+						"Addbook.php"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"/**",
+							" * Compare the Json Response with the request payload from Add Book request",
+							" */",
+							"pm.test(\"TC001: Validate the Json Response\", ()=>{",
+							"// Retreive json object response into a variable",
+							"const JsonResp = pm.response.json();",
+							"console.log(JsonResp);",
+							"console.log(JsonResp[0].author);",
+							"// Retreive \"Author_Name\" variable from Collection Variables",
+							"pm.expect(JsonResp[0].author).to.eql(pm.collectionVariables.get(\"Author_Name\"));",
+							"});",
+							"",
+							"// Validate the response Schema",
+							"pm.test(\"TC002: Validate the Scheme as per the request payload\",()=>{",
+							"const Schema = {",
+							"  \"type\": \"array\",",
+							"  \"items\": [",
+							"    {",
+							"      \"type\": \"object\",",
+							"      \"properties\": {",
+							"        \"book_name\": {",
+							"          \"type\": \"string\"",
+							"        },",
+							"        \"isbn\": {",
+							"          \"type\": \"string\"",
+							"        },",
+							"        \"aisle\": {",
+							"          \"type\": \"string\"",
+							"        },",
+							"        \"author\": {",
+							"          \"type\": \"string\"",
+							"        }",
+							"      },",
+							"      \"required\": [",
+							"        \"book_name\",",
+							"        \"isbn\",",
+							"        \"aisle\",",
+							"        \"author\"",
+							"      ]",
+							"    }",
+							"  ]",
+							"}",
+							"pm.response.to.have.jsonSchema(Schema);",
+							"});",
+							"",
+							"// Verify the Status code",
+							"pm.test(\"TC003: Verify the Status code of the request: 200 OK\",()=>{",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/Library/GetBook.php?ID={{Book_Id}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"Library",
+						"GetBook.php"
+					],
+					"query": [
+						{
+							"key": "ID",
+							"value": "{{Book_Id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete a Book",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// verify the status code for the request",
+							"pm.test(\"TC001: Verify the status for the delete request: 200 OK\", ()=>{",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Verify the Success message",
+							"pm.test(\"TC002: Verify the success message in the response\",()=>{",
+							"    const successResp = pm.response.json();",
+							"    pm.expect(successResp.msg).to.eql(\"book is successfully deleted\");",
+							"});",
+							"",
+							"// Verify the Json Schema from the response",
+							"const Schema = {",
+							"  \"type\": \"object\",",
+							"  \"properties\": {",
+							"    \"msg\": {",
+							"      \"type\": \"string\"",
+							"    }",
+							"  },",
+							"  \"required\": [",
+							"    \"msg\"",
+							"  ]",
+							"};",
+							"pm.test(\"TC003: Verify the Json Schema\",()=>{",
+							"    pm.response.to.have.jsonSchema(Schema);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\n\"ID\": \"{{Book_Id}}\"\n\n} \n \n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/Library/DeleteBook.php",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"Library",
+						"DeleteBook.php"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "isbn",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "Author_Name",
+			"value": ""
+		}
+	]
+}
